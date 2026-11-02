@@ -59,7 +59,7 @@ const AnimatedText = () => {
   const titleH1Class =
     'font-extrabold tracking-tight uppercase leading-tight text-white';
 
-  const poppinsStyle = { fontFamily: 'Poppins, sans-serif' };
+  const poppinsStyle = { fontFamily: 'var(--font-poppins), Poppins, sans-serif' };
 
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
@@ -72,7 +72,7 @@ const AnimatedText = () => {
         className="text-[clamp(1.5rem,6vw,3.7rem)] font-mono text-[#39FF14] mb-4 sm:mb-6 md:mb-8 lg:mb-10 leading-tight"
         style={{
           textShadow: '0 0 8px rgba(57, 255, 20, 0.6)',
-          fontFamily: 'JetBrains Mono, monospace'
+          fontFamily: 'var(--font-jetbrains-mono), JetBrains Mono, monospace'
         }}
       >
         <div className="inline-flex items-center">

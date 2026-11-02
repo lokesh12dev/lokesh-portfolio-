@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Italianno } from "next/font/google";
+import { Space_Grotesk, Italianno, Poppins, JetBrains_Mono } from "next/font/google";
 import { ContentProtection } from "@/components/content-protection";
 import "./globals.css";
 
@@ -16,6 +16,26 @@ const italianno = Italianno({
   variable: "--font-italianno",
   display: "swap",
   preload: false,
+});
+
+// Poppins previously fell back to system sans because it was styled via
+// CSS font-family without any @font-face. Hero headings on /pro depend
+// on it, so load weights actually referenced (600/700/800).
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-poppins",
+  display: "swap",
+  preload: true,
+});
+
+// JetBrains Mono powers the terminal, skill popups and hero typewriter.
+// Was silently falling back to the OS monospace font.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  preload: true,
 });
 
 export const viewport: Viewport = {
@@ -142,7 +162,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://cdn.sanity.io" />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${italianno.variable} antialiased font-sans`}
+        className={`${spaceGrotesk.variable} ${italianno.variable} ${poppins.variable} ${jetbrainsMono.variable} antialiased font-sans`}
       >
         <script
           type="application/ld+json"

@@ -289,13 +289,13 @@ button, a, input, textarea, [role='button'], [onclick] {
 }
 */
 
-/* Font families */
+/* Font families — resolved by next/font variables loaded in the root layout */
 .font-jetbrains {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
 }
 
 .font-poppins {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
 }
 
 /* Terminal styles */
@@ -321,7 +321,7 @@ button, a, input, textarea, [role='button'], [onclick] {
   height: 384px;
   overflow-y: auto;
   font-size: 14px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
   color: rgba(156, 163, 175, 0.8);
   white-space: pre-wrap;
   scrollbar-width: thin;
@@ -392,7 +392,7 @@ button, a, input, textarea, [role='button'], [onclick] {
 
 /* Skill popup text styling */
 .skill-popup-text {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
   color: #39ff14;
 }
 

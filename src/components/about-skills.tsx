@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Typewriter } from 'react-simple-typewriter';
 
@@ -47,31 +47,9 @@ const skills: Skill[] = [
   },
 ];
 
-// Motion Variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
-
-const AboutSkills = () => {
-  const terminalBodyRef = useRef<HTMLDivElement>(null);
-  const [displayedText, setDisplayedText] = useState('');
-  const [startTyping, setStartTyping] = useState(false);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
-  const [typingComplete, setTypingComplete] = useState(false);
-
-  const terminalContent =
+// Static terminal script — module scope so its identity never changes and
+// effects that depend on it don't churn every render.
+const TERMINAL_CONTENT =
 `lokesh@portfolio:~$ ./whoami --full
 
 ┌─ LOKESH.PORTFOLIO ───────────────────────────┐
@@ -100,25 +78,78 @@ lokesh@portfolio:~$ echo $INVITE
 lokesh@portfolio:~$
 `;
 
-  // Color each terminal line by its shape (prompt / quote / status / frame).
-  const renderTerminalLine = (line: string, key: number) => {
-    let cls = '';
-    if (line.startsWith('lokesh@')) cls = 'text-cyan-300 font-bold';
-    else if (line.startsWith('>')) cls = 'text-white';
-    else if (line.startsWith('●')) cls = 'text-emerald-300';
-    else if (line.startsWith('┌') || line.startsWith('└') || line.startsWith('│')) cls = 'text-white/50';
-    else if (/^\s{2}\S/.test(line)) cls = 'text-amber-200';
-    return (
-      <div key={key} className={cls}>
-        {line === '' ? ' ' : line}
-      </div>
-    );
-  };
+// Pre-computed line objects with their color class. The completed block is
+// memoized as one stable React element so per-tick typing only re-renders
+// the partial last line instead of the whole terminal.
+const TERMINAL_LINES = TERMINAL_CONTENT.split('\n').map((line, key) => {
+  let cls = '';
+  if (line.startsWith('lokesh@')) cls = 'text-cyan-300 font-bold';
+  else if (line.startsWith('>')) cls = 'text-white';
+  else if (line.startsWith('●')) cls = 'text-emerald-300';
+  else if (line.startsWith('┌') || line.startsWith('└') || line.startsWith('│')) cls = 'text-white/50';
+  else if (/^\s{2}\S/.test(line)) cls = 'text-amber-200';
+  return <div key={key} className={cls}>{line === '' ? ' ' : line}</div>;
+});
 
-  const typingInterval = 14;
-  const charsPerTick = 3;
+// Color class for the partially-typed line, computed the same way.
+function terminalLineClass(line: string) {
+  if (line.startsWith('lokesh@')) return 'text-cyan-300 font-bold';
+  if (line.startsWith('>')) return 'text-white';
+  if (line.startsWith('●')) return 'text-emerald-300';
+  if (line.startsWith('┌') || line.startsWith('└') || line.startsWith('│')) return 'text-white/50';
+  if (/^\s{2}\S/.test(line)) return 'text-amber-200';
+  return '';
+}
 
-  const skipTyping = () => setDisplayedText(terminalContent);
+// Motion Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 },
+};
+
+const AboutSkills = () => {
+  const terminalBodyRef = useRef<HTMLDivElement>(null);
+  const [displayedText, setDisplayedText] = useState('');
+  const [startTyping, setStartTyping] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [typingComplete, setTypingComplete] = useState(false);
+
+  // Typewriter pacing. 6 chars every 28ms matches the original pace
+  // (3 chars / 14ms) but halves the number of React updates — each tick
+  // re-renders only the memoized completed block (skipped) plus one line.
+  const typingInterval = 28;
+  const charsPerTick = 6;
+
+  // Memoize the fully-typed lines. React sees the same element reference
+  // between ticks until a new line completes, so reconciliation is ~free.
+  const completedLinesEnd = Math.min(
+    displayedText.length >= TERMINAL_CONTENT.length
+      ? TERMINAL_LINES.length
+      : displayedText.split('\n').length - 1,
+    TERMINAL_LINES.length,
+  );
+  const completedBlock = useMemo(
+    () => TERMINAL_LINES.slice(0, completedLinesEnd),
+    [completedLinesEnd],
+  );
+  const partialLine = useMemo(() => {
+    if (displayedText.length >= TERMINAL_CONTENT.length) return null;
+    const text = displayedText.split('\n').pop() ?? '';
+    return <div className={terminalLineClass(text)}>{text === '' ? ' ' : text}</div>;
+  }, [displayedText]);
+
+  const skipTyping = () => setDisplayedText(TERMINAL_CONTENT);
 
   useEffect(() => {
     const currentRef = terminalBodyRef.current;
@@ -138,7 +169,7 @@ lokesh@portfolio:~$
   }, [startTyping]);
 
   // Check if typing is complete
-  const isTypingComplete = displayedText.length >= terminalContent.length;
+  const isTypingComplete = displayedText.length >= TERMINAL_CONTENT.length;
 
   useEffect(() => {
     if (!startTyping || isTypingComplete) {
@@ -146,11 +177,11 @@ lokesh@portfolio:~$
     }
 
     const timeoutId = setTimeout(() => {
-      setDisplayedText((prev) => prev + terminalContent.slice(prev.length, prev.length + charsPerTick));
+      setDisplayedText((prev) => prev + TERMINAL_CONTENT.slice(prev.length, prev.length + charsPerTick));
     }, typingInterval);
 
     return () => clearTimeout(timeoutId);
-  }, [startTyping, displayedText, terminalContent, typingInterval, isTypingComplete]);
+  }, [startTyping, displayedText, typingInterval, charsPerTick, isTypingComplete]);
 
   // Update typingComplete when typing finishes
   useEffect(() => {
@@ -252,7 +283,8 @@ lokesh@portfolio:~$
             onScroll={handleScroll}
             className="p-6 text-[#39FF14] font-jetbrains text-xs sm:text-sm md:text-base h-[300px] sm:h-[400px] md:h-[450px] overflow-y-auto whitespace-pre-wrap leading-relaxed terminal-scrollbar"
           >
-            {displayedText.split('\n').map((line, i) => renderTerminalLine(line, i))}
+            {completedBlock}
+            {partialLine}
             <span aria-hidden="true" className="inline-block w-2.5 h-[1.1em] align-middle bg-[#39FF14] animate-pulse" />
           </div>
           {typingComplete && (

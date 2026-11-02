@@ -80,14 +80,14 @@ function TypingHeading({ headings }: { headings: string[] }) {
   // When the user prefers reduced motion, render a static heading
   if (shouldReduceMotion) {
     return (
-      <div className="mb-4 text-4xl font-bold text-neutrals-50 md:text-5xl" style={{ fontFamily: 'Poppins, sans-serif' }}>
+      <div className="mb-4 text-4xl font-bold text-neutrals-50 md:text-5xl" style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif' }}>
         <h2>{headings[0]}</h2>
       </div>
     );
   }
 
   return (
-    <div className="mb-4 text-4xl font-bold text-neutrals-50 md:text-5xl" style={{ fontFamily: 'Poppins, sans-serif' }}>
+    <div className="mb-4 text-4xl font-bold text-neutrals-50 md:text-5xl" style={{ fontFamily: 'var(--font-poppins), Poppins, sans-serif' }}>
       <h2 className="sr-only">{currentHeading}</h2>
       <AnimatePresence mode="wait">
         <motion.p

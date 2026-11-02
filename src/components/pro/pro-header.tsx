@@ -40,7 +40,7 @@ export function ProHeader() {
     setIsNavigating(true);
     setTimeout(() => {
       router.push('/casual');
-    }, 1500);
+    }, 600);
   };
 
   return (

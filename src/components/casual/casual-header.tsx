@@ -22,12 +22,17 @@ export function CasualHeader() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [showDevHint, setShowDevHint] = useState(true);
 
+  // Warm the /pro bundle so the mode switch lands instantly.
+  useEffect(() => {
+    router.prefetch('/pro');
+  }, [router]);
+
   // Auto-hide the "Developer? Curious?" hint after 2.5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowDevHint(false);
     }, 2500);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -36,16 +41,18 @@ export function CasualHeader() {
     const handleScroll = () => {
       setHasScrolled(window.scrollY > 10);
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Brief branded transition, no artificial pad: /pro is prefetched, the
+  // overlay's fade-in completes before the route is swapped.
   const handleToggleClick = () => {
     setIsNavigating(true);
     setTimeout(() => {
       router.push('/pro');
-    }, 1500);
+    }, 600);
   };
 
   return (

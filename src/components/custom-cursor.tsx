@@ -31,6 +31,7 @@ const CustomCursor = memo(function CustomCursor() {
     const target = { x: -100, y: -100 };
     const current = { x: -100, y: -100 };
     let rafId = 0;
+    let running = false;
     let visible = false;
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -40,16 +41,31 @@ const CustomCursor = memo(function CustomCursor() {
         visible = true;
         el.style.opacity = '1';
       }
+      // Restart the rAF loop on movement; it sleeps once the cursor settles.
+      if (!running) {
+        running = true;
+        rafId = requestAnimationFrame(loop);
+      }
     };
 
     const loop = () => {
       current.x += (target.x - current.x) * LERP;
       current.y += (target.y - current.y) * LERP;
+      const dx = target.x - current.x;
+      const dy = target.y - current.y;
+      if (dx * dx + dy * dy < 0.25) {
+        // Settled: snap to target and pause the loop until the mouse moves.
+        current.x = target.x;
+        current.y = target.y;
+        el.style.transform = `translate3d(${current.x - CURSOR_OFFSET}px, ${current.y - CURSOR_OFFSET}px, 0)`;
+        running = false;
+        return;
+      }
       el.style.transform = `translate3d(${current.x - CURSOR_OFFSET}px, ${current.y - CURSOR_OFFSET}px, 0)`;
       rafId = requestAnimationFrame(loop);
     };
 
-    rafId = requestAnimationFrame(loop);
+    // The loop only runs while the cursor is moving; first mousemove starts it.
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {

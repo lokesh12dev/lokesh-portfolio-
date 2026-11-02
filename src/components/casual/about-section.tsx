@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import lokeshSunrise from '@/assets/images/lokesh-mountain-sunrise.png';
@@ -377,11 +377,16 @@ export function CasualFooter() {
   const [isNavigating, setIsNavigating] = useState(false);
   const router = useRouter();
 
+  // Warm the /pro bundle so the mode switch lands instantly.
+  useEffect(() => {
+    router.prefetch('/pro');
+  }, [router]);
+
   const handleProClick = () => {
     setIsNavigating(true);
     setTimeout(() => {
       router.push('/pro');
-    }, 1500);
+    }, 600);
   };
 
   return (
