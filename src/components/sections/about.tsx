@@ -6,14 +6,14 @@ import { Caption, Paragraph } from '@/components/ui/typography';
 import { AboutSkills } from '@/components/about-skills';
 
 const headings = [
-  'Problem Solvers',
-  'Web Developers',
-  'App Developers',
-  'UI/UX Designers',
-  'Free Thinkers',
-  'Freelancers',
-  'Creative Minds',
-  'Passionists',
+  'Problem Solver',
+  'Web Developer',
+  'App Developer',
+  'UI/UX Designer',
+  'Free Thinker',
+  'Freelancer',
+  'Creative Mind',
+  'Passionist',
 ];
 
 export default function AboutSection() {
