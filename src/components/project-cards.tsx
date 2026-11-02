@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion, useMotionValue, useTransform, AnimatePresence, useReducedMotion, type PanInfo } from 'framer-motion';
-import { Fish, Bus, Ticket, ArrowRight, Eye, LucideIcon, X } from 'lucide-react';
+import { Fish, Bus, Ticket, Clapperboard, ArrowRight, Eye, ExternalLink, LucideIcon, X } from 'lucide-react';
 
 // ============================================================================
 // TYPES
@@ -32,6 +32,7 @@ interface Project {
   stats: { label: string; value: string }[];
   uniqueness: string[];
   demoId: string;
+  liveUrl?: string;
 }
 
 // ============================================================================
@@ -39,6 +40,51 @@ interface Project {
 // ============================================================================
 
 const projects: Project[] = [
+  {
+    id: 'movieverse',
+    slug: 'movieverse',
+    title: 'MovieVerse',
+    tagline: 'Cinematic Ticket Booking',
+    description: 'Movie, event and play bookings with a draggable 3D poster carousel, live city show maps, and instant e-tickets.',
+    longDescription: 'A cinematic ticket-booking experience covering movies, events, plays and sports. Features a draggable 3D poster wall, city-wise show discovery, pre-booking countdowns, an interactive seat map with a seat-view preview, and instant e-tickets.',
+    icon: Clapperboard,
+    image: '/images/movieverse-bg.webp',
+    gradient: 'from-amber-500/20 via-yellow-500/10 to-amber-500/20',
+    accentColor: '#e6b34a',
+    techStack: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'GSAP', 'Zustand'],
+    features: [
+      { 
+        title: '3D Poster Carousel', 
+        description: 'Drag-to-explore poster wall with depth, reflections, and spotlight effects',
+        code: `perspective: 1200px; transform: rotateY(var(--angle));`
+      },
+      { 
+        title: 'City-Wise Show Discovery', 
+        description: 'Live show listings for Chennai, Hyderabad, Bengaluru, Kochi, and Mumbai',
+      },
+      { 
+        title: 'Interactive Seat Map', 
+        description: 'Pick seats and preview the view from your seat before booking',
+      },
+      { 
+        title: 'Instant E-Tickets', 
+        description: 'Three-tap booking flow with pre-booking countdowns and digital tickets',
+      },
+    ],
+    stats: [
+      { label: 'Films Listed', value: '47' },
+      { label: 'Cities', value: '5' },
+      { label: 'Booking Steps', value: '3' },
+    ],
+    uniqueness: [
+      'Cinematic 3D poster wall with drag-to-spin interaction',
+      'Seat-view preview from the selected seat',
+      'Pre-booking countdowns for upcoming releases',
+      'City-wise film, event, play, and sports discovery',
+    ],
+    demoId: 'movieverse',
+    liveUrl: 'https://movieverse-ticket-booking.vercel.app/',
+  },
   {
     id: 'kadal',
     slug: 'kadal-thunai',
@@ -293,11 +339,15 @@ function SwipeCard({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-            aria-label={`View details for ${project.title}`}
+            aria-label={project.liveUrl ? `Open the live ${project.title} site in a new tab` : `View details for ${project.title}`}
             className="w-full py-3 min-h-11 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutrals-200 font-medium transition-all flex items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <span>View Details</span>
-            <span aria-hidden="true" className="text-lg">→</span>
+            <span>{project.liveUrl ? 'Live Demo' : 'View Details'}</span>
+            {project.liveUrl ? (
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <span aria-hidden="true" className="text-lg">→</span>
+            )}
           </motion.button>
         </div>
 
@@ -340,8 +390,12 @@ export function ProjectCards() {
     }, 150);
   };
 
-  const handleViewDetails = (slug: string) => {
-    router.push(`/showcase/${slug}`);
+  const handleViewDetails = (project: Project) => {
+    if (project.liveUrl) {
+      window.open(project.liveUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    router.push(`/showcase/${project.slug}`);
   };
 
   const currentProject = projects[currentIndex];
@@ -368,7 +422,7 @@ export function ProjectCards() {
             key={currentProject.id}
             project={currentProject}
             onSwipe={handleSwipe}
-            onViewDetails={() => handleViewDetails(currentProject.slug)}
+            onViewDetails={() => handleViewDetails(currentProject)}
             isTop={true}
           />
         </AnimatePresence>
@@ -411,13 +465,17 @@ export function ProjectCards() {
         {/* View box — opens the current project */}
         <button
           type="button"
-          onClick={() => handleViewDetails(currentProject.slug)}
-          aria-label={`View details for ${currentProject.title}`}
-          title={`View ${currentProject.title}`}
+          onClick={() => handleViewDetails(currentProject)}
+          aria-label={currentProject.liveUrl ? `Open the live ${currentProject.title} site in a new tab` : `View details for ${currentProject.title}`}
+          title={currentProject.liveUrl ? `Open ${currentProject.title} live site` : `View ${currentProject.title}`}
           className="h-12 min-h-11 px-5 rounded-full bg-primary flex items-center justify-center gap-2 text-white text-sm font-bold hover:brightness-110 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          <Eye className="w-5 h-5" aria-hidden="true" />
-          View
+          {currentProject.liveUrl ? (
+            <ExternalLink className="w-5 h-5" aria-hidden="true" />
+          ) : (
+            <Eye className="w-5 h-5" aria-hidden="true" />
+          )}
+          {currentProject.liveUrl ? 'Live' : 'View'}
         </button>
 
         {/* Next arrow — swipes to the next project card */}
@@ -434,7 +492,9 @@ export function ProjectCards() {
 
       {/* Hint */}
       <p className="text-center text-neutrals-400 text-xs mt-5">
-        Swipe or tap → for next · View to open details
+        {currentProject.liveUrl
+          ? 'Swipe or tap → for next · Live opens the site'
+          : 'Swipe or tap → for next · View to open details'}
       </p>
       <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         Project {currentIndex + 1} of {projects.length}: {currentProject.title}
